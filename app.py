@@ -1,0 +1,91 @@
+from flask import Flask, render_template, url_for, request, redirect
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+import time
+print(datetime.utcnow)
+app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///todolist.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///buttonname.db'
+db = SQLAlchemy(app)
+db1 = SQLAlchemy(app)
+class Todolist(db.Model):
+    identification = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(200), nullable=False)
+    date_created = db.Column(db.DateTime, default=time.time())
+
+    def __repr__(self):
+        return '<Task %r>' % self.id
+
+class Buttonname(db1.Model):
+    id = db1.Column(db1.Integer, primary_key=True)
+    name = db1.Column(db1.Integer, nullable=False)
+
+
+
+
+@app.route('/', methods=['POST', 'GET'])
+def index():
+    if request.method == 'POST':
+        task_content = request.form['content']
+        new_task = Todolist(content=task_content)
+
+        try:
+            Buttonname.session.add(Buttonname(name='False'))
+            db1.commit()
+            db.session.add(new_task)
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'There was an issue adding your task'
+
+    else:
+
+        tasks = Todolist.query.order_by(Todolist.identification).all()
+        buttonname = Buttonname.query.order_by(Buttonname.id).all()
+        return render_template('index.html', tasks=tasks,buttonname=buttonname,loopcontent=zip(tasks,buttonname))
+
+
+@app.route('/delete/<int:id>')
+def delete(id):
+    task_to_delete = Todolist.query.get_or_404(id)
+    task_to_delete1 = Buttonname.query.get_or_404(id)
+    try:
+        db1.session.delete(task_to_delete1)
+        db1.session.commit()
+        db.session.delete(task_to_delete)
+        db.session.commit()
+        return redirect('/')
+    except:
+        return 'There was a problem deleting that task'
+
+@app.route('/update/<int:id>', methods=['GET', 'POST'])
+def update(id):
+    task = Todolist.query.get_or_404(id)
+    buttonname = Buttonname.query.get_or_404(id)
+    if request.method == 'POST':
+        task.content = request.form['content']
+        buttonname.name = 'False'
+
+        try:
+            db1.session.commit()
+            db.session.commit()
+            return redirect('/')
+        except:
+            return 'There was an issue updating your task'
+
+    else:
+        return render_template('update.html', task=task)
+@app.route('/completed/<int:id>',methods=['GET','POST'])
+def completed(id):
+    buttonname = Buttonname.query.get_or_404(id)
+    if request.method == 'POST':
+        buttonname.name = 'True'
+        try:
+            db.session.commit()
+            return redirect('/')
+        except:
+            return "There was an error in doing so"
+
+if __name__  ==  "__main__":
+    app.run(debug=True)

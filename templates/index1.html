@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+{% block head %}
+{% endblock %}
+<div align="center">
+{% block body %}
+    <style>
+       body, html {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: lightblue;
+}
+
+.content {
+    margin: 0 auto;
+    width: 400px;
+}
+
+table, td, th {
+    border: 1px solid #aaa;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    height: 30px;
+}
+
+td {
+    text-align: center;
+    padding: 5px;
+}
+
+.form {
+    margin-top: 20px;
+}
+
+#content {
+    width: 70%;
+}
+    </style>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Tasks</th>
+            <th>Edit</th>
+            <th>Completed</th>
+            <th>Deadline</th>
+            <th>Update deadline</th>
+        </tr>
+        {% for i in contents %}
+        <tr>
+            <td>{{i.id}}</td>
+            <td>{{i.name}}</td>
+            <td>
+                <a href="/edit/{{i.id}}"><button>Edit</button></a>
+                <a href="/delete/{{i.id}}"><button>Delete</button></a>
+            </td>
+            <td>
+                <form action="/completed/{{i.id}}" method="POST">
+                    <input type="submit" id="submit" value="{{i.buttonname}}">
+                </form>
+            </td>
+            <td>{{i.deadline}}</td>
+            <td>
+                <a href="/updatedeadline/{{i.id}}"><button>Update Deadline</button></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+<form action="/" method="POST">
+    <input type="text" name="text" id="text" placeholder="Task">
+    <input type="text" name="deadline" id="deadline" placeholder="Deadline">
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}
+</div>
+</html>
